@@ -167,3 +167,45 @@ To ensure total transparency and avoid false claims:
 | **Phase 27 (Creative Screenplay)**| Screenplay parser, beats, scene card breakdowns. | **Lost in disk failure.** Not present in repo. | Implement creative domain models and planning handoff logic. |
 | **Phase 28 (Observability)** | Telemetry collectors, projection listeners, diagnostic rules. | **Lost in disk failure.** Not present in repo. | Implement event bus contracts, read-only projection stores, and metric aggregators. |
 | **Physical Pilot 01** | Specified and planned; awaited local API key. | **Unexecuted.** | Do not execute until Phase 19–24A are rebuilt, verified, and explicitly authorized. |
+
+---
+
+## 7. Architecture Decision Record (ADR) — Recovery Baseline
+
+The following architectural decisions have been explicitly approved by the steering authority for platform reconstruction. They are distinguished from historical design records as newly ratified decisions governing the clean-slate reconstruction.
+
+### ADR-01: Canonical Database Engine & Persistence Layer
+- **Status**: Approved
+- **Decision**: PostgreSQL is designated as the canonical database engine for AI Movie Studio across both production and local development environments.
+- **ORM & Migrations**: SQLAlchemy 2.0 (async/sync typed mappings) and Alembic for declarative schema migrations.
+- **Local Environment Strategy**: Local PostgreSQL will run via Docker Compose (`docker compose up -d postgres`).
+- **Constraint / Rationale**: Do NOT create a separate SQLite dialect or dual-database abstraction unless a specific, validated operational requirement justifies it. PostgreSQL provides the essential transactional primitives (`SELECT ... FOR UPDATE SKIP LOCKED`, native JSONB indexing, strict concurrency control) required for durable job leases, manifest immutability, and relational lineage.
+
+### ADR-02: Google Veo Integration Architecture & Opt-In Guardrails
+- **Status**: Approved
+- **Decision**: Use the official Google GenAI Python SDK (`google-genai`) exclusively encapsulated inside the Phase 22 provider adapter (`VeoVideoProvider`).
+- **Contract Isolation**: The core domain, worker engine, and pipeline orchestration must never import `google-genai` directly. The adapter translates canonical `GenerationManifest` specifications into Veo API requests and converts provider responses into standardized `SceneOutputRegistry` assets.
+- **Strict Execution Restriction**: Real, billable provider API calls remain strictly opt-in and are **prohibited during scaffolding, unit testing, and early milestone verification**. Scaffolding and tests must use deterministic mock adapters and contract fixtures until Physical Pilot 01 is explicitly authorized.
+
+### ADR-03: PostgreSQL-Backed Durable Background Worker & Queue System
+- **Status**: Approved
+- **Decision**: Reconstruct a PostgreSQL-backed durable worker and job management system consistent with the historical Phase 19 architecture, utilizing relational transactional semantics (`FOR UPDATE SKIP LOCKED`).
+- **Capabilities Preserved**: Durable job state machine (`PENDING`, `ACQUIRED`, `RUNNING`, `COMPLETED`, `FAILED`, `CANCELLED`), worker heartbeats, lease expiration and reclamation, idempotency keys, exponential backoff retry governance, and safe recovery after unexpected worker interruption.
+- **Constraint / Rationale**: Do NOT add Redis, Celery, or RabbitMQ without a demonstrated operational bottleneck or scaling requirement. A relational queue in PostgreSQL eliminates distributed split-brain failure modes, provides ACID transactionality with entity state transitions, and reduces operational complexity during initial recovery.
+
+### ADR-04: Language Runtime Baseline & Compatibility Verification
+- **Status**: Approved
+- **Decision**: Python 3.12 is adopted as the proposed runtime baseline for the platform.
+- **Verification Rule**: Prior to locking `pyproject.toml` dependencies in Milestone M1, core packages (`SQLAlchemy`, `Alembic`, `psycopg`, `pydantic`, `google-genai`, `ruff`, `mypy`, `pytest`) must be verified for clean compatibility on Python 3.12 without dependency conflicts.
+
+---
+
+## 8. Architectural Decision Status & Resolved Questions
+
+All three foundational recovery questions have been resolved and ratified:
+
+1. **Local Database Engine**: Resolved via **ADR-01**. Canonical engine is PostgreSQL using SQLAlchemy and Alembic, backed by Docker Compose locally. SQLite dual-engine is rejected.
+2. **Google Veo Integration**: Resolved via **ADR-02**. Official `google-genai` SDK is approved, strictly isolated inside the adapter layer. Real calls remain disabled until explicitly authorized.
+3. **Queue Backend for Worker Engine**: Resolved via **ADR-03**. PostgreSQL-backed durable queue with row leases and `SKIP LOCKED` is approved. Redis/Celery/RabbitMQ dependencies are rejected.
+4. **Active Architectural Questions Pending User Input**: **None.** The technical baseline is fully decided for Milestone M1 execution upon explicit user approval.
+

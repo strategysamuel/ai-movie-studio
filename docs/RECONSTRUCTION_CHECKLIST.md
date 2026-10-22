@@ -43,22 +43,26 @@ Each milestone requires comprehensive verification across unit/integration tests
 - [ ] Await explicit user authorization before initiating code implementation — `IN PROGRESS`
 
 ### Milestone M1: Project Scaffolding & Core Architecture (Phases 1–18)
+- [ ] Verify Python 3.12 baseline and dependency matrix compatibility — `NOT STARTED`
 - [ ] Set up Python project configuration (`pyproject.toml`, virtual environment specifications) — `NOT STARTED`
 - [ ] Configure Ruff (linting/formatting), Mypy (strict type-checking), and Pytest — `NOT STARTED`
+- [ ] Create Docker Compose configuration for local PostgreSQL service (`docker-compose.yml`) — `NOT STARTED`
 - [ ] Reconstruct base configuration system (environment settings, provider configuration schemas, secrets isolation) — `NOT STARTED`
-- [ ] Implement foundational database models and migrations (PostgreSQL / SQLite for local development) — `NOT STARTED`
+- [ ] Implement foundational database models and migrations with SQLAlchemy and Alembic (PostgreSQL canonical) — `NOT STARTED`
 - [ ] Implement core shared utilities (logging, hashing, UUID generation, datetime utilities) — `NOT STARTED`
 - [ ] **Verification Gate**:
   - `pytest` passes with 100% of tests green
   - `mypy --strict` passes with zero errors
   - `ruff check` and `ruff format --check` pass
+  - PostgreSQL schema migrations apply cleanly via Alembic
   - Git checkpoint commit & push
 
 ### Milestone M2: Durable Worker Engine & Job Management (Phase 19)
 - [ ] Implement `GenerationJob` and task state machine (`PENDING`, `ACQUIRED`, `RUNNING`, `COMPLETED`, `FAILED`, `CANCELLED`) — `NOT STARTED`
+- [ ] Implement PostgreSQL-backed durable queue worker (`SELECT ... FOR UPDATE SKIP LOCKED`) without Redis/Celery — `NOT STARTED`
 - [ ] Implement lease management mechanism with automatic heartbeat renewals and timeout re-queuing — `NOT STARTED`
 - [ ] Implement idempotency key constraints preventing duplicate job dispatch — `NOT STARTED`
-- [ ] Implement exponential backoff retry governance with dead-letter queue handling — `NOT STARTED`
+- [ ] Implement exponential backoff retry governance with dead-letter queue handling and interrupted-worker recovery — `NOT STARTED`
 - [ ] **Verification Gate**:
   - Unit & concurrent integration tests for lease expiration, worker recovery, and idempotent duplicate handling
   - Static type-checking and linting verification
@@ -155,11 +159,12 @@ Each milestone requires comprehensive verification across unit/integration tests
   - Git checkpoint commit & push
 
 ### Milestone M12: Cloud Provider Integration (Google Veo Adapter)
-- [ ] Implement Google Veo 3.1 Fast provider adapter adhering to Phase 22 standard provider interface — `NOT STARTED`
+- [ ] Implement Google Veo 3.1 Fast provider adapter encapsulating official `google-genai` SDK adhering to Phase 22 standard provider interface — `NOT STARTED`
 - [ ] Implement asynchronous polling, rate-limiting, timeout, and transient error retry logic — `NOT STARTED`
 - [ ] Implement credential resolution via secure environment configuration (no hardcoded keys) — `NOT STARTED`
+- [ ] Enforce ADR-02 guardrail: real, billable provider calls are strictly opt-in and prohibited during scaffolding/testing — `NOT STARTED`
 - [ ] **Verification Gate**:
-  - Mocked provider contract test suite validating request payload formatting and response parsing
+  - Mocked provider contract test suite validating request payload formatting and response parsing without making network/billable calls
   - Git checkpoint commit & push
 
 ### Milestone M13: Physical Pilot 01 Execution & Verification

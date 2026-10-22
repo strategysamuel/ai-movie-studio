@@ -44,6 +44,20 @@
   - Zero secrets or machine credentials added.
   - Git remotes and histories preserved without force-pushes or unauthorized branch manipulations.
 
+### Stage 2: Architecture Decision Record Ratification
+- **Status**: Completed / Awaiting Milestone M1 Implementation Authorization
+- **Date**: 2026-10-22
+- **Actions Taken**:
+  1. Ratified and documented ADR-01 (Canonical Database): PostgreSQL selected as canonical engine using SQLAlchemy and Alembic, local instance backed by Docker Compose. Dual SQLite implementation rejected.
+  2. Ratified and documented ADR-02 (Google Veo Provider Adapter): Official `google-genai` SDK encapsulated strictly inside the adapter layer. Real provider calls remain opt-in and prohibited during scaffolding.
+  3. Ratified and documented ADR-03 (PostgreSQL-Backed Durable Worker): Reconstructed worker queue in PostgreSQL using row leases and `SKIP LOCKED`. Redis/Celery/RabbitMQ dependencies rejected.
+  4. Ratified and documented ADR-04 (Runtime Baseline): Python 3.12 adopted as proposed baseline with dependency matrix compatibility check prior to locking.
+  5. Updated `docs/RECOVERY_BLUEPRINT.md` with Section 7 (ADR) and Section 8 (Resolved Questions).
+  6. Updated `docs/RECONSTRUCTION_CHECKLIST.md` aligning Milestones M1, M2, and M12 with approved ADRs.
+- **Verification**:
+  - No application code, models, migrations, or tests added.
+  - Working directory checked and confirmed clean outside of `docs/`.
+
 ---
 
 ## Historical Claims vs. Reconstruction Audit Log
